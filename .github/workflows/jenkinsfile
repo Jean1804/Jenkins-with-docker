@@ -1,39 +1,27 @@
 pipeline {
     agent any
-    
-    stages {
-        stage('Build') {
-            steps {
-                script {
-                    docker.build('actividad3-php-fpm', '.')
-                }
-            }
-        }
-        
-        stage('Test') {
-            steps {
-                script {
-                    docker.image('actividad3-php-fpm').withRun('-p 8092:80') {
-                        sh 'curl http://localhost:8092/index.php'
-                    }
-                }
-            }
-        }
-        
-        stage('Deploy') {
-            environment {
-                DB_HOST = 'db'
-                DB_NAME = 'postgres'
-                DB_USER = 'postgres'
-                DB_PASS = credentials('Jean1804')
-            }
-            steps {
-                script {
-                    docker.image('actividad3-php-fpm').push('my-registry/actividad3-php-fpm')
-                    sh 'docker-compose up -d'
-                }
-            }
-        }
-    }
+
+stage('Clonar repositorio') {
+  steps {
+    git 'https://github.com/Jean1804/Jenkins-with-docker.git'
+  }
 }
 
+stage('Instalar dependencias PHP') {
+  steps {
+    sh 'cd C:/Users/User/Desktop/Actividad3/src && composer install'
+  }
+}
+
+stage('Construir y ejecutar contenedor Postgres') {
+  steps {
+    sh 'docker run --name postgres -e POSTGRES_PASSWORD=Jean1804 -d postgres:latest'
+  }
+}
+
+stage('Ejecutar contenedor PHP') {
+  steps {
+    sh 'docker run -p 8092:80 --name php-fpm -e DB_HOST=db -e DB_PORT=5432 -e DB_NAME=postgres -e DB_USER=postgres -e DB_PASS=Jean1804 -d ./src:/var/www/html php:7.4-apache'
+  }
+}
+}
