@@ -13,8 +13,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    docker.image('actividad3-php-fpm').withRun('-p 8090:80') {
-                        sh 'curl http://localhost:8090/index.php'
+                    docker.image('actividad3-php-fpm').withRun('-p 8092:80') {
+                        sh 'curl http://localhost:8092/index.php'
                     }
                 }
             }
